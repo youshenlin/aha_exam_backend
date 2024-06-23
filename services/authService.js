@@ -2,6 +2,53 @@ const oAuth2Client = require('../config/passport');
 const User = require('../models/userModel');
 const jwtUtils = require('../utils/jwtUtils');
 const bcryptUtils = require('../utils/bcryptUtils');
+const { ValidationError, AuthenticationError } = require('../utils/errors');
+
+/**
+ * Validates the password based on predefined criteria.
+ * @param {string} password - The password to be validated.
+ * @returns {Array} - An array of error messages, empty if valid.
+ */
+const validatePassword = (password) => {
+    const errors = [];
+    if (!/[a-z]/.test(password)) {
+        errors.push('Password must contain at least one lower character');
+    }
+    if (!/[A-Z]/.test(password)) {
+        errors.push('Password must contain at least one upper character');
+    }
+    if (!/\d/.test(password)) {
+        errors.push('Password must contain at least one digit character');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        errors.push('Password must contain at least one special character');
+    }
+    if (password.length < 8) {
+        errors.push('Password must contain at least 8 characters');
+    }
+    return errors;
+};
+
+/**
+ * Validates the email format using a regular expression.
+ * @param {string} email - The email to be validated.
+ * @returns {boolean} - True if the email format is valid, false otherwise.
+ */
+const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
+
+/**
+ * Normalizes the email by removing any text after a '+' character in the local part.
+ * @param {string} email - The email to be normalized.
+ * @returns {string} - The normalized email.
+ */
+const normalizeEmail = (email) => {
+    const [localPart, domainPart] = email.split('@');
+    const normalizedLocalPart = localPart.split('+')[0].replace(/\./g, '');
+    return `${normalizedLocalPart}@${domainPart}`;
+};
 
 module.exports = {
     // Generates the Google OAuth login URL
@@ -40,21 +87,38 @@ module.exports = {
 
     // Handles login via email and password
     emailLogin: async (email, password) => {
-        const user = await User.findOne({ where: { email } }); // Find user by email
+        const normalizedEmail = normalizeEmail(email);
+        const user = await User.findOne({ where: { normalizedEmail } });
 
-        // Check if the user exists and the password is correct
-        if (user && await bcryptUtils.comparePassword(password, user.password)) {
-            return jwtUtils.generateToken(user); // Generate and return JWT token
-        } else {
-            throw new Error('Invalid email or password'); // Throw an error if authentication fails
+        if (!user) {
+            throw new AuthenticationError('Invalid email or password');
         }
+
+        if (!await bcryptUtils.comparePassword(password, user.password)) {
+            throw new AuthenticationError('Invalid email or password');
+        }
+        return jwtUtils.generateToken(user);
     },
 
     // Registers a new user with email and password
-    registerUser: async (email, password) => {
+    registerUser: async (email, password, confirmPassword) => {
+        if (password !== confirmPassword) {
+            throw new ValidationError('Passwords do not match');
+        }
+
+        const passwordErrors = validatePassword(password);
+        if (passwordErrors.length > 0) {
+            throw new ValidationError(passwordErrors.join(', '));
+        }
+
+        if (!validateEmail(email)) {
+            throw new ValidationError('Invalid email format');
+        }
+        const normalizedEmail = normalizeEmail(email);
         const hashedPassword = await bcryptUtils.hashPassword(password); // Hash the password
+
         const user = await User.create({
-            email,
+            email: normalizedEmail,
             password: hashedPassword,
             type: 'email'
         });
@@ -65,10 +129,9 @@ module.exports = {
     getProfile: async (token) => {
         const decoded = jwtUtils.verifyToken(token); // Verify the JWT token
         const user = await User.findByPk(decoded.id); // Find the user by ID from the decoded token
-        if (user) {
-            return user; // Return the user information if found
-        } else {
-            throw new Error('Unauthorized'); // Throw an error if the user is not found
+        if (!user) {
+            throw new AuthenticationError('Unauthorized');
         }
+        return user;
     }
 };
