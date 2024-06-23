@@ -21,4 +21,7 @@ router.get('/profile', authenticateJWT, authController.profile);
 // Route to handle user logout
 router.get('/logout', authController.logout);
 
+// Route to handle password reset
+router.post('/auth/reset-password', authenticateJWT, authController.resetPassword);
+
 module.exports = router; // Export the router

@@ -133,5 +133,29 @@ module.exports = {
             throw new AuthenticationError('Unauthorized');
         }
         return user;
+    },
+
+    resetPassword: async (userId, oldPassword, newPassword, confirmNewPassword) => {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new AuthenticationError('User not found');
+        }
+
+        if (!await bcryptUtils.comparePassword(oldPassword, user.password)) {
+            throw new ValidationError('Old password is incorrect');
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            throw new ValidationError('New passwords do not match');
+        }
+
+        const passwordErrors = validatePassword(newPassword);
+        if (passwordErrors.length > 0) {
+            throw new ValidationError(passwordErrors.join(', '));
+        }
+
+        user.password = await bcryptUtils.hashPassword(newPassword);
+        await user.save();
+        return user;
     }
 };

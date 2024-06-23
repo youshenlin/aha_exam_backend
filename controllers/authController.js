@@ -60,5 +60,15 @@ module.exports = {
     logout: (req, res) => {
         res.clearCookie('jwt');
         res.redirect('/');
+    },
+    resetPassword: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const { oldPassword, newPassword, confirmNewPassword } = req.body;
+            await authService.resetPassword(userId, oldPassword, newPassword, confirmNewPassword);
+            res.send('Password has been reset successfully');
+        } catch (error) {
+            res.status(error.statusCode || 500).send(error.message);
+        }
     }
 };
