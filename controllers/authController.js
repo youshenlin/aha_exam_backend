@@ -70,5 +70,22 @@ module.exports = {
         } catch (error) {
             res.status(error.statusCode || 500).send(error.message);
         }
+    },
+    verifyEmail: async (req, res) => {
+        try {
+            await authService.verifyEmail(req.query.token);
+            res.send('Email has been verified successfully');
+        } catch (error) {
+            res.status(error.statusCode || 500).send(error.message);
+        }
+    },
+    resendVerificationEmail: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            await authService.resendVerificationEmail(userId);
+            res.send('Verification email has been resent successfully');
+        } catch (error) {
+            res.status(error.statusCode || 500).send(error.message);
+        }
     }
 };

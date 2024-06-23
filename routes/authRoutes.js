@@ -24,4 +24,8 @@ router.get('/logout', authController.logout);
 // Route to handle password reset
 router.post('/auth/reset-password', authenticateJWT, authController.resetPassword);
 
+router.get('/auth/verify-email', authController.verifyEmail);
+
+router.post('/auth/resend-verification-email', authenticateJWT, authController.resendVerificationEmail); // 添加这一行
+
 module.exports = router; // Export the router

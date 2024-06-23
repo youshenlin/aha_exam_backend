@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const jwtUtils = require('../utils/jwtUtils');
 const bcryptUtils = require('../utils/bcryptUtils');
 const { ValidationError, AuthenticationError } = require('../utils/errors');
+const emailService = require('./emailService');
 
 /**
  * Validates the password based on predefined criteria.
@@ -122,6 +123,7 @@ module.exports = {
             password: hashedPassword,
             type: 'email'
         });
+        await emailService.sendVerificationEmail(user);
         return jwtUtils.generateToken(user); // Generate and return JWT token
     },
 
@@ -157,5 +159,30 @@ module.exports = {
         user.password = await bcryptUtils.hashPassword(newPassword);
         await user.save();
         return user;
+    },
+    verifyEmail: async (token) => {
+        const decoded = jwtUtils.verifyToken(token);
+        const user = await User.findByPk(decoded.id);
+        if (!user) {
+            throw new AuthenticationError('Invalid or expired token');
+        }
+
+        if (user.isVerified) {
+            throw new AuthenticationError('Email already verified');
+        }
+
+        user.isVerified = 1;
+        await user.save();
+        return user;
+    },
+    resendVerificationEmail: async (userId) => {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new AuthenticationError('User not found');
+        }
+        if (user.isVerified) {
+            throw new ValidationError('Email is already verified');
+        }
+        await emailService.sendVerificationEmail(user);
     }
 };

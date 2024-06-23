@@ -6,7 +6,7 @@ const path = require('path');
 
 const app = express();
 const authRoutes = require('./routes/authRoutes');
-
+const resend = require('./config/resend');
 // Set up body parser to parse URL-encoded and JSON request bodies
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());

@@ -34,6 +34,10 @@ const User = sequelize.define('aha_users', {
         type: DataTypes.STRING,
         allowNull: false, // Type cannot be null, used to differentiate login methods, e.g., 'google' or 'email'
     },
+    isVerified: {
+        type: DataTypes.NUMBER,
+        defaultValue: 0,
+    },
     createdAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW, // Set default value to current date and time
