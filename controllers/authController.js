@@ -34,18 +34,28 @@ module.exports = {
     // Registers a new user with email and password
     registerUser: async (req, res) => {
         try {
-            const token = await authService.registerUser(req.body.email, req.body.password);
+            const token = await authService.registerUser(req.body.email, req.body.password, req.body.confirmPassword);
             // Sets a cookie with the JWT token, secure: true should be used in production
             res.cookie('jwt', token, { httpOnly: true, secure: false });
             res.redirect('/profile');
         } catch (error) {
+            console.error(error);
             res.status(500).send(error.message);
         }
     },
-
+    getProfile: async (req, res) => {
+        try {
+            const user = req.user;
+            const userData = await authService.getProfile(user);
+            res.Json(userData);
+        } catch (error) {
+            res.status(500).send(error.message);
+        }
+    },
     // Renders the user's profile page
     profile: (req, res) => {
         const user = req.user;
+        authService.getProfile(user);
         res.send(`
             <h1>Profile</h1>
             <p>Name: ${user.displayName}</p>

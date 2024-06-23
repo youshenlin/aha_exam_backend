@@ -11,13 +11,12 @@ const sendVerificationEmail = async (user) => {
     <a href="${verificationLink}">Verify Email</a>
   `;
 
-    const resendResponse = await resend.sendEmail({
+    await resend.emails.send({
         from: 'service@chunkgo.com',
         to: user.email,
         subject: 'Email Verification',
         html: emailBody
     });
-    console.log(resendResponse);
 };
 
 module.exports = { sendVerificationEmail };

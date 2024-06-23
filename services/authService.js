@@ -1,5 +1,6 @@
 const oAuth2Client = require('../config/passport');
-const User = require('../models/userModel');
+const { aha_users: User } = require('../models');
+const sessionService = require('./sessionService');
 const jwtUtils = require('../utils/jwtUtils');
 const bcryptUtils = require('../utils/bcryptUtils');
 const { ValidationError, AuthenticationError } = require('../utils/errors');
@@ -79,10 +80,13 @@ module.exports = {
                 displayName: payload.name,
                 email: payload.email,
                 photoUrl: payload.picture,
+                isVerified: 1,
                 type: 'google'
             });
         }
-
+        user.loginCount += 1;
+        await user.save();
+        await sessionService.recordSession(user.id, 'login');
         return jwtUtils.generateToken(user); // Generate and return JWT token
     },
 
@@ -98,6 +102,9 @@ module.exports = {
         if (!await bcryptUtils.comparePassword(password, user.password)) {
             throw new AuthenticationError('Invalid email or password');
         }
+        user.loginCount += 1;
+        await user.save();
+        await sessionService.recordSession(user.id, 'login');
         return jwtUtils.generateToken(user);
     },
 
@@ -123,17 +130,17 @@ module.exports = {
             password: hashedPassword,
             type: 'email'
         });
+        user.loginCount += 1;
+        await user.save();
+        await sessionService.recordSession(user.id, 'login');
         await emailService.sendVerificationEmail(user);
         return jwtUtils.generateToken(user); // Generate and return JWT token
     },
 
     // Retrieves the profile of the authenticated user
-    getProfile: async (token) => {
-        const decoded = jwtUtils.verifyToken(token); // Verify the JWT token
-        const user = await User.findByPk(decoded.id); // Find the user by ID from the decoded token
-        if (!user) {
-            throw new AuthenticationError('Unauthorized');
-        }
+    getProfile: async (user) => {
+        const a = await sessionService.recordSession(user.id, 'session');
+        console.log(a);
         return user;
     },
 
@@ -141,6 +148,10 @@ module.exports = {
         const user = await User.findByPk(userId);
         if (!user) {
             throw new AuthenticationError('User not found');
+        }
+
+        if (oldPassword === newPassword) {
+            throw new ValidationError('Old password and new password cannot be the same');
         }
 
         if (!await bcryptUtils.comparePassword(oldPassword, user.password)) {

@@ -6,7 +6,7 @@ const path = require('path');
 
 const app = express();
 const authRoutes = require('./routes/authRoutes');
-const resend = require('./config/resend');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 // Set up body parser to parse URL-encoded and JSON request bodies
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -19,6 +19,8 @@ app.use(express.static(path.join(__dirname, 'views')));
 
 // Use the authentication routes
 app.use('/', authRoutes);
+
+app.use('/', dashboardRoutes);
 
 // Serve the index.html file on the root route
 app.get('/', (req, res) => {
