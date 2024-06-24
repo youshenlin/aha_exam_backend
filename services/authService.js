@@ -57,7 +57,7 @@ module.exports = {
     googleLogin: () => {
         return oAuth2Client.generateAuthUrl({
             access_type: 'offline', // Requests offline access
-            scope: ['profile', 'email'] // Requests access to the user's profile and email
+            scope: ['profile', 'email'], // Requests access to the user's profile and email
         });
     },
 
@@ -68,7 +68,7 @@ module.exports = {
 
         const ticket = await oAuth2Client.verifyIdToken({
             idToken: tokens.id_token,
-            audience: process.env.CLIENT_ID
+            audience: process.env.CLIENT_ID,
         });
         const payload = ticket.getPayload(); // Get user information from the ID token
 
@@ -79,9 +79,8 @@ module.exports = {
                 googleId: payload.sub,
                 displayName: payload.name,
                 email: payload.email,
-                photoUrl: payload.picture,
                 isVerified: 1,
-                type: 'google'
+                type: 'google',
             });
         }
         user.loginCount += 1;
@@ -93,13 +92,13 @@ module.exports = {
     // Handles login via email and password
     emailLogin: async (email, password) => {
         const normalizedEmail = normalizeEmail(email);
-        const user = await User.findOne({ where: { normalizedEmail } });
+        const user = await User.findOne({ where: { email: normalizedEmail } });
 
         if (!user) {
             throw new AuthenticationError('Invalid email or password');
         }
 
-        if (!await bcryptUtils.comparePassword(password, user.password)) {
+        if (!(await bcryptUtils.comparePassword(password, user.password))) {
             throw new AuthenticationError('Invalid email or password');
         }
         user.loginCount += 1;
@@ -116,7 +115,7 @@ module.exports = {
 
         const passwordErrors = validatePassword(password);
         if (passwordErrors.length > 0) {
-            throw new ValidationError(passwordErrors.join(', '));
+            throw new ValidationError(passwordErrors.join(','));
         }
 
         if (!validateEmail(email)) {
@@ -128,19 +127,18 @@ module.exports = {
         const user = await User.create({
             email: normalizedEmail,
             password: hashedPassword,
-            type: 'email'
+            type: 'email',
         });
         user.loginCount += 1;
         await user.save();
         await sessionService.recordSession(user.id, 'login');
-        await emailService.sendVerificationEmail(user);
+        // await emailService.sendVerificationEmail(user);
         return jwtUtils.generateToken(user); // Generate and return JWT token
     },
 
     // Retrieves the profile of the authenticated user
     getProfile: async (user) => {
-        const a = await sessionService.recordSession(user.id, 'session');
-        console.log(a);
+        await sessionService.recordSession(user.id, 'session');
         return user;
     },
 
@@ -154,7 +152,7 @@ module.exports = {
             throw new ValidationError('Old password and new password cannot be the same');
         }
 
-        if (!await bcryptUtils.comparePassword(oldPassword, user.password)) {
+        if (!(await bcryptUtils.comparePassword(oldPassword, user.password))) {
             throw new ValidationError('Old password is incorrect');
         }
 
@@ -195,5 +193,14 @@ module.exports = {
             throw new ValidationError('Email is already verified');
         }
         await emailService.sendVerificationEmail(user);
-    }
+    },
+    changeDisplayName: async (userId, displayName) => {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new AuthenticationError('User not found');
+        }
+        user.displayName = displayName;
+        await user.save();
+        return user;
+    },
 };

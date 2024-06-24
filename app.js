@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-
+const cors = require('cors');
 const app = express();
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -11,6 +11,12 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.use(
+    cors({
+        origin: 'http://localhost:4000',
+        credentials: true, // 允许发送 cookie
+    })
+);
 // Set up cookie parser to parse cookies
 app.use(cookieParser());
 
@@ -18,9 +24,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'views')));
 
 // Use the authentication routes
-app.use('/', authRoutes);
+app.use('/api/', authRoutes);
 
-app.use('/', dashboardRoutes);
+app.use('/api/', dashboardRoutes);
 
 // Serve the index.html file on the root route
 app.get('/', (req, res) => {
@@ -28,6 +34,6 @@ app.get('/', (req, res) => {
 });
 
 // Start the server on port 3000
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+app.listen(process.env.PORT, () => {
+    console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });

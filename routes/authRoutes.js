@@ -15,8 +15,7 @@ router.post('/auth/login', authController.emailLogin);
 // Route to handle user registration
 router.post('/auth/register', authController.registerUser);
 
-// Route to display the user's profile, protected by JWT authentication
-router.get('/profile', authenticateJWT, authController.profile);
+router.get('/user/profile', authenticateJWT, authController.getProfile);
 
 // Route to handle user logout
 router.get('/logout', authController.logout);
@@ -27,5 +26,7 @@ router.post('/auth/reset-password', authenticateJWT, authController.resetPasswor
 router.get('/auth/verify-email', authController.verifyEmail);
 
 router.post('/auth/resend-verification-email', authenticateJWT, authController.resendVerificationEmail); // 添加这一行
+
+router.post('/auth/changeDisplayName', authenticateJWT, authController.changeDisplayName);
 
 module.exports = router; // Export the router

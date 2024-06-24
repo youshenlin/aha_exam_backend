@@ -12,8 +12,11 @@ module.exports = {
         try {
             const token = await authService.googleCallback(req.query.code);
             // Sets a cookie with the JWT token, secure: true should be used in production
-            res.cookie('jwt', token, { httpOnly: true, secure: false });
-            res.redirect('/profile');
+            res.cookie('jwt', token, {
+                httpOnly: true,
+                secure: false,
+            });
+            res.send('Google login successful');
         } catch (error) {
             res.status(500).send(error.message);
         }
@@ -25,7 +28,7 @@ module.exports = {
             const token = await authService.emailLogin(req.body.email, req.body.password);
             // Sets a cookie with the JWT token, secure: true should be used in production
             res.cookie('jwt', token, { httpOnly: true, secure: false });
-            res.redirect('/profile');
+            res.send('Login successful');
         } catch (error) {
             res.status(401).send(error.message);
         }
@@ -37,9 +40,8 @@ module.exports = {
             const token = await authService.registerUser(req.body.email, req.body.password, req.body.confirmPassword);
             // Sets a cookie with the JWT token, secure: true should be used in production
             res.cookie('jwt', token, { httpOnly: true, secure: false });
-            res.redirect('/profile');
+            res.send('User has been created successfully');
         } catch (error) {
-            console.error(error);
             res.status(500).send(error.message);
         }
     },
@@ -47,23 +49,10 @@ module.exports = {
         try {
             const user = req.user;
             const userData = await authService.getProfile(user);
-            res.Json(userData);
+            res.json(userData);
         } catch (error) {
             res.status(500).send(error.message);
         }
-    },
-    // Renders the user's profile page
-    profile: (req, res) => {
-        const user = req.user;
-        authService.getProfile(user);
-        res.send(`
-            <h1>Profile</h1>
-            <p>Name: ${user.displayName}</p>
-            <p>Email: ${user.email}</p>
-            <p>Login Type: ${user.type}</p>
-            <p><img src="${user.photoUrl}" alt="User Photo" /></p>
-            <a href="/logout">Logout</a>
-        `);
     },
 
     // Logs out the user by clearing the JWT cookie
@@ -97,5 +86,16 @@ module.exports = {
         } catch (error) {
             res.status(error.statusCode || 500).send(error.message);
         }
-    }
+    },
+
+    changeDisplayName: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const { displayName } = req.body;
+            await authService.changeDisplayName(userId, displayName);
+            res.send('Display name has been changed successfully');
+        } catch (error) {
+            res.status(error.statusCode || 500).send(error.message);
+        }
+    },
 };

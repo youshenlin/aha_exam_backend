@@ -23,10 +23,6 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             unique: true,
         },
-        photoUrl: {
-            type: DataTypes.STRING,
-            allowNull: true,
-        },
         type: {
             type: DataTypes.STRING,
             allowNull: false,
@@ -49,7 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         },
     });
 
-    User.associate = models => {
+    User.associate = (models) => {
         User.hasMany(models.user_sessions, {
             foreignKey: 'userId',
             as: 'sessions',
