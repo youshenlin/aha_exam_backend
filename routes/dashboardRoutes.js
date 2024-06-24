@@ -5,4 +5,6 @@ const router = express.Router();
 
 router.get('/dashboard', authenticateJWT, sessionController.getUserDashboard);
 
+router.get('/statistics', authenticateJWT, sessionController.getUserStatistics);
+
 module.exports = router;

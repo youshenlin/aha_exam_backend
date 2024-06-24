@@ -138,7 +138,6 @@ module.exports = {
 
     // Retrieves the profile of the authenticated user
     getProfile: async (user) => {
-        await sessionService.recordSession(user.id, 'session');
         return user;
     },
 
@@ -146,6 +145,10 @@ module.exports = {
         const user = await User.findByPk(userId);
         if (!user) {
             throw new AuthenticationError('User not found');
+        }
+
+        if (user.type === 'google') {
+            throw new AuthenticationError('google account cannot be reset');
         }
 
         if (oldPassword === newPassword) {
@@ -182,7 +185,8 @@ module.exports = {
 
         user.isVerified = 1;
         await user.save();
-        return user;
+
+        return jwtUtils.generateToken(user);
     },
     resendVerificationEmail: async (userId) => {
         const user = await User.findByPk(userId);

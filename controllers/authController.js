@@ -15,8 +15,9 @@ module.exports = {
             res.cookie('jwt', token, {
                 httpOnly: true,
                 secure: false,
+                path: '/',
             });
-            res.send('Google login successful');
+            res.redirect('/dashboard');
         } catch (error) {
             res.status(500).send(error.message);
         }
@@ -27,7 +28,7 @@ module.exports = {
         try {
             const token = await authService.emailLogin(req.body.email, req.body.password);
             // Sets a cookie with the JWT token, secure: true should be used in production
-            res.cookie('jwt', token, { httpOnly: true, secure: false });
+            res.cookie('jwt', token, { httpOnly: true, secure: false, path: '/' });
             res.send('Login successful');
         } catch (error) {
             res.status(401).send(error.message);
@@ -39,7 +40,7 @@ module.exports = {
         try {
             const token = await authService.registerUser(req.body.email, req.body.password, req.body.confirmPassword);
             // Sets a cookie with the JWT token, secure: true should be used in production
-            res.cookie('jwt', token, { httpOnly: true, secure: false });
+            res.cookie('jwt', token, { httpOnly: true, secure: false, path: '/' });
             res.send('User has been created successfully');
         } catch (error) {
             res.status(500).send(error.message);
@@ -57,8 +58,8 @@ module.exports = {
 
     // Logs out the user by clearing the JWT cookie
     logout: (req, res) => {
-        res.clearCookie('jwt');
-        res.redirect('/');
+        res.clearCookie('jwt', { httpOnly: true, secure: false, path: '/' });
+        res.send('Logged out successfully');
     },
     resetPassword: async (req, res) => {
         try {
@@ -72,8 +73,20 @@ module.exports = {
     },
     verifyEmail: async (req, res) => {
         try {
-            await authService.verifyEmail(req.query.token);
-            res.send('Email has been verified successfully');
+            const token = await authService.verifyEmail(req.query.token);
+            res.cookie('jwt', token, { httpOnly: true, secure: false, path: '/' });
+            res.send(`
+            <html>
+                <body>
+                    <p>Email has been verified successfully</p>
+                    <script>
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1000); 
+                    </script>
+                </body>
+            </html>
+        `);
         } catch (error) {
             res.status(error.statusCode || 500).send(error.message);
         }
