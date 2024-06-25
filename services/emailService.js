@@ -3,7 +3,7 @@ const jwtUtils = require('../utils/jwtUtils');
 
 const sendVerificationEmail = async (user) => {
     const token = jwtUtils.generateToken({ id: user.id, email: user.email }, '1h'); // Token有效期1小时
-    const verificationLink = `${process.env.BASE_URL}/auth/verify-email?token=${token}`;
+    const verificationLink = `${process.env.BASE_URL}/api/auth/verify-email?token=${token}`;
 
     const emailBody = `
     <h1>Email Verification</h1>
@@ -15,7 +15,7 @@ const sendVerificationEmail = async (user) => {
         from: 'service@chunkgo.com',
         to: user.email,
         subject: 'Email Verification',
-        html: emailBody
+        html: emailBody,
     });
 };
 
