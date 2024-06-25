@@ -8,7 +8,7 @@ This repository contains the backend for the AHA AI Exam project. It is built us
 
 ## API Documentation
 
-The full API documentation is available in the `api/doc` folder. Please refer to it for detailed information about each endpoint, request parameters, and response formats.
+The full API documentation is available in the `/api/docs` folder. Please refer to it for detailed information about each endpoint, request parameters, and response formats.
 [API Documentation](https://aha.chunkgo.com/api/docs)
 
 ## Demo
