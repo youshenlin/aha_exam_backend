@@ -125,15 +125,21 @@ module.exports = {
             throw new ValidationError('Invalid email format');
         }
         const normalizedEmail = normalizeEmail(email);
+
+        // Check if the email is already registered
+        const existingUser = await User.findOne({ where: { email: normalizedEmail, type: 'email' } });
+        if (existingUser) {
+            throw new ValidationError('Email is already registered');
+        }
+
         const hashedPassword = await bcryptUtils.hashPassword(password); // Hash the password
 
         const user = await User.create({
             email: normalizedEmail,
             password: hashedPassword,
             type: 'email',
+            loginCount: 1,
         });
-        user.loginCount += 1;
-        await user.save();
         await sessionService.recordSession(user.id, 'login');
         await emailService.sendVerificationEmail(user);
         return jwtUtils.generateToken(user); // Generate and return JWT token
