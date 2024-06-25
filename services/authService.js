@@ -132,7 +132,7 @@ module.exports = {
         user.loginCount += 1;
         await user.save();
         await sessionService.recordSession(user.id, 'login');
-        // await emailService.sendVerificationEmail(user);
+        await emailService.sendVerificationEmail(user);
         return jwtUtils.generateToken(user); // Generate and return JWT token
     },
 
