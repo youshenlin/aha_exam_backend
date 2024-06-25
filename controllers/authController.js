@@ -17,7 +17,7 @@ module.exports = {
                 secure: false,
                 path: '/',
             });
-            res.redirect('/dashboard');
+            res.redirect(`${process.env.BASE_URL}/dashboard`);
         } catch (error) {
             res.status(500).send(error.message);
         }
