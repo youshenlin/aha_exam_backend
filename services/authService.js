@@ -28,6 +28,9 @@ const validatePassword = (password) => {
     if (password.length < 8) {
         errors.push('Password must contain at least 8 characters');
     }
+    if (password.length > 30) {
+        errors.push('Password must not exceed 30 characters');
+    }
     return errors;
 };
 
