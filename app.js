@@ -9,7 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const { swaggerUi, swaggerDocument } = require('./swagger');
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Set up body parser to parse URL-encoded and JSON request bodies
 app.use(bodyParser.urlencoded({ extended: false }));
