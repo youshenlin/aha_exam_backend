@@ -15,18 +15,22 @@ router.post('/auth/login', authController.emailLogin);
 // Route to handle user registration
 router.post('/auth/register', authController.registerUser);
 
+// Route to retrieve the user's profile, requires authentication
 router.get('/user/profile', authenticateJWT, authController.getProfile);
 
 // Route to handle user logout
 router.get('/logout', authController.logout);
 
-// Route to handle password reset
+// Route to handle password reset, requires authentication
 router.post('/auth/reset-password', authenticateJWT, authController.resetPassword);
 
+// Route to verify the user's email using a token
 router.get('/auth/verify-email', authController.verifyEmail);
 
-router.post('/auth/resend-verification-email', authenticateJWT, authController.resendVerificationEmail); // 添加这一行
+// Route to resend the verification email, requires authentication
+router.post('/auth/resend-verification-email', authenticateJWT, authController.resendVerificationEmail);
 
+// Route to change the user's display name, requires authentication
 router.post('/auth/changeDisplayName', authenticateJWT, authController.changeDisplayName);
 
 module.exports = router; // Export the router

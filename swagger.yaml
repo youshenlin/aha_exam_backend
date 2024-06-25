@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+    title: API Documentation
+    version: 1.0.0
+    description: API documentation for login, logout, and dashboard functionalities.
+
+paths:
+    /api/auth/google:
+        get:
+            summary: Initiate Google login
+            tags: [Authentication]
+            responses:
+                '200':
+                    description: Successful redirection to Google for authentication.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/google/callback:
+        get:
+            summary: Handle Google callback after authentication
+            tags: [Authentication]
+            responses:
+                '200':
+                    description: Successful Google authentication.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/login:
+        post:
+            summary: Login via email and password
+            tags: [Authentication]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+            responses:
+                '200':
+                    description: Successful login.
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/register:
+        post:
+            summary: User registration
+            tags: [Authentication]
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                password:
+                                    type: string
+                                confirmPassword:
+                                    type: string
+            responses:
+                '200':
+                    description: User successfully registered.
+                '500':
+                    description: Internal server error.
+
+    /api/user/profile:
+        get:
+            summary: Get user profile
+            tags: [User]
+            security:
+                - cookieAuth: []
+            responses:
+                '200':
+                    description: User profile information.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: integer
+                                    displayName:
+                                        type: string
+                                        nullable: true
+                                    email:
+                                        type: string
+                                    type:
+                                        type: string
+                                        enum: [google, email]
+                                    isVerified:
+                                        type: integer
+                                    createdAt:
+                                        type: string
+                                        format: date-time
+                                    loginCount:
+                                        type: integer
+                    '401':
+                        description: Unauthorized.
+                    '500':
+                        description: Internal server error.
+
+    /api/logout:
+        get:
+            summary: User logout
+            tags: [Authentication]
+            responses:
+                '200':
+                    description: Successfully logged out.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/reset-password:
+        post:
+            summary: Reset password
+            tags: [Authentication]
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                oldPassword:
+                                    type: string
+                                newPassword:
+                                    type: string
+                                confirmNewPassword:
+                                    type: string
+            responses:
+                '200':
+                    description: Password reset successfully.
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/verify-email:
+        get:
+            summary: Verify email address
+            tags: [Authentication]
+            parameters:
+                - name: token
+                  required: true
+            responses:
+                '200':
+                    description: Email verified successfully.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/resend-verification-email:
+        post:
+            summary: Resend verification email
+            tags: [Authentication]
+            security:
+                - cookieAuth: []
+            responses:
+                '200':
+                    description: Verification email resent.
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+    /api/auth/changeDisplayName:
+        post:
+            summary: Change display name
+            tags: [Authentication]
+            security:
+                - cookieAuth: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                displayName:
+                                    type: string
+            responses:
+                '200':
+                    description: Display name changed successfully.
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+    /api/dashboard:
+        get:
+            summary: Get user dashboard
+            tags: [Dashboard]
+            security:
+                - cookieAuth: []
+            responses:
+                '200':
+                    description: User dashboard information.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        displayName:
+                                            type: string
+                                            nullable: true
+                                        email:
+                                            type: string
+                                        signupTs:
+                                            type: string
+                                            format: date-time
+                                        loginCount:
+                                            type: integer
+                                        lastSession:
+                                            type: string
+                                            format: date-time
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+    /api/statistics:
+        get:
+            summary: Get user statistics
+            tags: [Dashboard]
+            security:
+                - cookieAuth: []
+            responses:
+                '200':
+                    description: User statistics information.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    totalUsers:
+                                        type: integer
+                                    activeSessionsToday:
+                                        type: integer
+                                    averageActiveSessionsLast7Days:
+                                        type: string
+                                        example: '0.86'
+                '401':
+                    description: Unauthorized.
+                '500':
+                    description: Internal server error.
+
+components:
+    securitySchemes:
+        cookieAuth:
+            type: apiKey
+            in: cookie
+            name: jwt

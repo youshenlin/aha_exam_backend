@@ -46,6 +46,8 @@ module.exports = {
             res.status(500).send(error.message);
         }
     },
+
+    // Retrieves the profile of the logged-in user
     getProfile: async (req, res) => {
         try {
             const user = req.user;
@@ -61,6 +63,8 @@ module.exports = {
         res.clearCookie('jwt', { httpOnly: true, secure: false, path: '/' });
         res.send('Logged out successfully');
     },
+
+    // Resets the user's password
     resetPassword: async (req, res) => {
         try {
             const userId = req.user.id;
@@ -71,6 +75,8 @@ module.exports = {
             res.status(error.statusCode || 500).send(error.message);
         }
     },
+
+    // Verifies the user's email using a token
     verifyEmail: async (req, res) => {
         try {
             const token = await authService.verifyEmail(req.query.token);
@@ -91,6 +97,8 @@ module.exports = {
             res.status(error.statusCode || 500).send(error.message);
         }
     },
+
+    // Resends the verification email
     resendVerificationEmail: async (req, res) => {
         try {
             const userId = req.user.id;
@@ -101,6 +109,7 @@ module.exports = {
         }
     },
 
+    // Changes the user's display name
     changeDisplayName: async (req, res) => {
         try {
             const userId = req.user.id;

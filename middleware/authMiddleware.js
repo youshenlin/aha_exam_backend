@@ -23,5 +23,5 @@ module.exports = {
             console.error('Error verifying JWT token:', error);
             res.status(401).send('Unauthorized'); // Send 401 if token verification fails
         }
-    }
+    },
 };
